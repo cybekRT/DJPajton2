@@ -2,11 +2,12 @@ import os
 import vlc
 import pafy
 import threading
-from base.models import Song, ShuffleItem, User, USER_TYPE_SKYPE
-from random import shuffle
+from base.models import Song, ShuffleItem, QueueItem, User, USER_TYPE_SKYPE
 from __builtin__ import True
 from player.Logger import Logger
 import json
+import time
+import random
 
 _player = None
 
@@ -36,6 +37,8 @@ class Player():
 		global _player
 		if _player is not None:
 			raise "Player was initialized!"
+		
+		random.seed(time.clock())
 		
 		print "Starting player..."
 		self.vlcInstance = vlc.Instance("--live-caching=0 --network-caching=0 --norm-buff-size=8")
@@ -93,7 +96,16 @@ class Player():
 		print "Player state changed!"
 		
 	def logCurrentQueue(self):
-		msg = "DJPajton zapuszcza: {}".format(self.currentSong.title.encode('utf-8'))
+		if self.currentSong is not None:
+			msg = "DJPajton zapuszcza: {}".format(self.currentSong.title.encode('utf-8'))
+		else:
+			msg = "DJPajton spi..."
+		
+		if QueueItem.objects.count() > 0:
+			msg = msg + "\n\n"
+			msg = msg + "W kolejce:"
+			for item in QueueItem.objects.all():
+				msg = msg + "\n- {}".format(item.song.title.encode('utf-8'))
 		
 		Logger.instance().Log(msg)
 		return
@@ -102,7 +114,7 @@ class Player():
 	
 	def shufflePlaylist(self):
 		songs = list(Song.objects.filter(active = True).values_list('id', flat = True))
-		shuffle(songs)
+		random.shuffle(songs)
 		print songs
 		for a in songs:
 			item = ShuffleItem()
@@ -112,6 +124,18 @@ class Player():
 		Logger.instance().Log("Everyday im shufflin~")
 		
 	def nextSong(self, force = False):
+		queueItemsCount = QueueItem.objects.count()
+		if queueItemsCount > 0:
+			id = random.randint(0, queueItemsCount - 1)
+			print "Random {} from {}".format(id, queueItemsCount)
+			item = QueueItem.objects.all()[id]
+			song = item.song
+			item.delete()
+			print "Item: {} - {}".format(item.user, item.song)
+			
+			self.playSong(song)
+			return
+		
 		if ShuffleItem.objects.count() == 0:
 			self.shufflePlaylist()
 			
@@ -122,15 +146,41 @@ class Player():
 		shuffleItem = ShuffleItem.objects.first()
 		song = shuffleItem.song
 		shuffleItem.delete()
+		
+		self.playSong(song)
+		return
 		#song = Song.objects.get(id = 1)
 		
-		url = pafy.new(song.url).getbestaudio().url
-		print "Url: " + url
-		self.vlcPlayer.set_mrl(url)
-		self.vlcPlayer.play()
-		print "Ok!"
+	def playSong(self, song):
+		try:
+			url = pafy.new(song.url).getbestaudio().url
+			print "Url: " + url
+			self.vlcPlayer.set_mrl(url)
+			self.vlcPlayer.play()
+			print "Ok!"
+			
+			self.currentSong = song
+			self.logCurrentQueue()
+		except Exception as e:
+			Logger.instance().Log("Player error ({} - {}): {}".format(song.id, song.title.encode('utf-8'), e))
+			self.nextSong(True)
 		
-		self.currentSong = song
+	def queueSong(self, user, ids = None):
+		if ids is not None:
+			ids = filter(None, ids.split(" "))
+		
+			for id in ids:
+				try:
+					if QueueItem.objects.filter(song_id = id).count() > 0:
+						continue
+					
+					item = QueueItem()
+					item.song = Song.objects.get(id = id)
+					item.user = user
+					item.save()
+				except:
+					pass
+		
 		self.logCurrentQueue()
 		
 	def isPlaying(self):
@@ -140,7 +190,7 @@ class Player():
 		if self.isPlaying() is False:
 			Logger.instance().Log("Started party!")
 			if self.currentSong is None:
-				self.nextSong()
+				self.nextSong(True)
 			else:
 				self.vlcPlayer.play()
 				self.logCurrentQueue()

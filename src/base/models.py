@@ -53,6 +53,11 @@ class Song(models.Model):
 class ShuffleItem(models.Model):
 	id = models.AutoField(primary_key = True)
 	song = models.ForeignKey(Song)
+
+class QueueItem(models.Model):
+	id = models.AutoField(primary_key = True)
+	song = models.ForeignKey(Song)
+	user = models.ForeignKey(User)
 	
 class AuthToken(models.Model):
 	token = models.TextField(primary_key = True)

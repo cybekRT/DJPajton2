@@ -53,8 +53,9 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		("^next$", "Next", "Next song, spam starts again..."),
 		("^queue$", "Queue", "Displays current queue"),
 		("queue.*?([0-9 ]+)", "Queue", "Adds songs to queue"),
+		("^queue$", "Queue", "Prints current queue"),
 		("vol.*?([0-9]+)", "Volume", "Changes current volume"),
-		("^vol$", "Volume", "Get current volume"),
+		("^vol$", "Volume", "Gets current volume"),
 	)
 	
 	tokens = {
@@ -249,9 +250,13 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 	def Next(self, userId):
 		self.Request(userId, "next")
 
-	def Queue(self, userId):
+	def Queue(self, userId, ids = None):
 		#print len(args)
 		print "Ohh"
+		if ids is not None:
+			self.Request(userId, "queue/{}".format(ids))
+		else:
+			self.Request(userId, "queue")
 
 	def Volume(self, userId, volume = None):
 		

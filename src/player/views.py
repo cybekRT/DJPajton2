@@ -4,7 +4,7 @@ from __future__ import unicode_literals
 from django.shortcuts import render
 from player.Player import Player
 from django.http.response import HttpResponse
-from base.models import Song
+from base.models import Song, AuthToken
 from django.core import serializers
 from player.Logger import Logger
 import json
@@ -43,16 +43,42 @@ def Next(request):
 	Player.instance().nextSong()
 	return HttpResponse()
 
+def Status(request):
+	player = Player.instance()
+	song = player.getCurrentSong()
+	data = {}
+	data['playing'] = player.isPlaying()
+	if song is not None and player.isPlaying():
+		data['title'] = song.title
+	else:
+		data['title'] = ""
+	data['time'] = player.getTime()
+	data['length'] = player.getLength()
+	data['volume'] = player.getVolume()
+	
+	return HttpResponse(json.dumps(data))
+
 def Playlist(request):
 	#blob = json.dumps(list(Song.objects.all()))
 	blob = serializers.serialize("json", Song.objects.all())
 	return HttpResponse(blob)
 
-def Queue(request, *args):
-	print "Queue here: {}".format(args)
-	return HttpResponse(str(args))
+def Queue(request, ids = None):
+	print "Request: {}".format(request)
+	print "Queue!"
+	token_str = request.COOKIES['token']
+	print "Huh?"
+	token = AuthToken.Get(token_str)
+	
+	print "Got token, getting player!"
+	player = Player.instance()
+	player.queueSong(token.user, ids)
+	
+	print "Queue here: {}".format(ids)
+	return HttpResponse()
 
 def Invalid(request):
+	print "Invalid request!!!!!"
 	print request.path[5:]
 	x = request.path[5:].split('/')
 	print x
@@ -63,8 +89,9 @@ def Invalid(request):
 	import sys
 	q = getattr(sys.modules[__name__], functionName)
 	try:
-		return q(*functionParams)
-	except:
+		return q(request, *functionParams)
+	except Exception as e:
+		print "Not implemented - {}".format(e)
 		return HttpResponse("Not implemented: {}".format(functionName), status = 501)
 	
 def LoggerRecent(request):

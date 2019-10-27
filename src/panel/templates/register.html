@@ -1,0 +1,16 @@
+{% extends 'layout.html' %}
+{% block title %}DJ Pajton - Login{% endblock %}
+
+{% block content %}
+<form method="post">
+<pre>
+	<input name="type" hidden=true value="1"></input>
+	Login:           <input name="login"></input>
+	Password:        <input name="password" type="password"></input>
+	Repeat password: <input name="password2" type="password"></input>
+	Display name:    <input name="displayName"></input>
+	<input type="submit" />
+	{% csrf_token %}
+</pre>
+</form>
+{% endblock %}

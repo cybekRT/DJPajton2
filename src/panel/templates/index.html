@@ -1,0 +1,131 @@
+{% extends 'layout.html' %}
+{% block title %}DJ Pajton{% endblock %}
+
+{% load songtime %}
+
+{% block content %}
+<pre>
+	Test - {{ song.title }}<br />
+	Time - <p id="songtext">Testing... testing!</p> {{ time|songtime }} / {{ length|songtime }}<br />
+	Volume - {{ volume }}<br />
+	<input id="song-progress" type="range" min="0" max="{{ length }}" value="{{ time }}" width="500" style="width: 500px;" onchange=" $.get('/api/time/'+$(this).val()) ">
+	<input id="song-volume" type="range" min="0" max="100" value="{{ volume }}" width="500" style="width: 500px;" onchange=" $.get('/api/volume/'+$(this).val()) ">
+	<input type="button" value="Start" onclick="$.get('/api/start')">
+	<input type="button" value="Stop" onclick="$.get('/api/stop')">
+	<input type="button" value="Next" onclick="$.get('/api/next')">
+	<div id="article-list">
+		{% if is_paginated %}
+			<div class="paginator">
+				{% for page in paginator.page_range %}
+					<a href="{% url 'article:index' %}?page={{ page }}">
+					{% ifequal page page_obj.number %}
+						[{{ page }}]
+					{% else %}
+						{{ page }}
+					{% endifequal %}
+					</a>
+				{% endfor %}
+			</div>
+		{% endif %}
+	
+		{% for article in articles %}
+			{% include 'article/article-item.html' %}
+		{% endfor %}
+	</div>
+	Playlist:
+	<p id="playlist"></p>
+	Filter - title: <input id="filter-title" type="text" onkeyup="updateFilters()">
+	<select id="playlist-select" multiple></select>
+</pre>
+
+<script type="text/javascript">
+
+function updateFilters()
+{
+	//alert( $("#filter-title").val() );
+	
+	var list = $("#playlist-select");
+	//alert(list.children.length);
+	
+	var a;
+	
+	// Restore
+	for(a = 0; a < list.children().length; ++a)
+	{
+		var item = list.children()[a];
+		item.hidden = false;
+	}
+	
+	reqTitle = $("#filter-title").val().toLowerCase()
+	
+	// Hide by title
+	for(a = 0; a < list.children().length; ++a)
+	{
+		var item = list.children()[a];
+		var title = item.text.toLowerCase();
+		
+		if(title.search(reqTitle) == -1)
+		{
+			item.hidden = true;
+		}
+		//title = 'xd';
+		//item.text = "xd";
+		//item.hidden = true;
+	}
+}
+
+function timer()
+{
+	$.get(
+		"/api/time", function(data) {
+			$('#songtext').text(data);
+			$('#song-progress').val(data);
+		}
+	);
+	
+	$.get(
+		"/api/length", function(data) {
+			$('#song-progress').attr("max", data);
+		}
+	);
+	
+	$.get(
+		"/api/volume", function(data) {
+			$('#song-volume').val(data);
+		}
+	);
+}
+
+function timerz()
+{
+	//$('#song-progress').val($('#song-progress').val()+1);
+	$('#song-progress').val(parseInt($('#song-progress').val())+1);
+	//alert($('#song-progress').val()+1);
+}
+
+var playlist;
+
+$(document).ready(function () {
+	//your code here
+	//alert("ok");
+	
+	$.getJSON(
+		"/api/playlist", function(data, status, xhr) {
+			playlist = data;
+			var i;
+			for(i = 0; i < data.length; i++)
+			{
+				var item = data[i].fields;
+				var id = item.id;
+				var title = item.title;
+				$("#playlist-select").append(`<option value="${id}" author="${item.user}">${title}</option>`);
+			}
+		}
+	);	  
+});
+
+setInterval(timerz, 1000);
+setInterval(timer, 10000);
+</script>
+	
+{% endblock %}

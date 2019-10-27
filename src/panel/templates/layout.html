@@ -1,0 +1,19 @@
+{% spaceless %}<!doctype html>
+{% load staticfiles %}
+<html>
+	<head>
+		<title>{% block title %}BABYMETAL{% endblock %}</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="stylesheet" href="{% static 'style.min.css' %}">
+		<link rel="icon" href="{% static 'favicon.jpg' %}">
+		<script src="{% static 'jquery-2.2.0.min.js' %}" ></script>
+		{% block head %}{% endblock %}
+	</head>
+	<body>
+		<div id="content">
+			{% endspaceless %}{% block content %}{% endblock %}{% spaceless %}
+		</div>
+	</body>
+</html>
+{% endspaceless %}

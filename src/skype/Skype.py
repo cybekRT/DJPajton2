@@ -233,10 +233,10 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		
 		try:
 			req = s.post(url = endpoint, data = data)
-			if req.status_code != 200:
-				result = "Invalid request!"
-			else:
-				result = req.text
+			#if req.status_code != 200:
+			#	result = "Invalid request!"
+			#else:
+			result = req.text
 		except Exception as e:
 			result = "exception: {}".format(e)
 		self.sendMsg("Register result: {}".format(result))

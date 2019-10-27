@@ -52,7 +52,11 @@ class Register(View):
 			return redirect('/register?error=1&please_stop_hacking_this_site=667')
 		
 		user.displayName = displayName
-		user.save()
+		
+		try:
+			user.save()
+		except Exception as e:
+			return HttpResponse("Registration failed: {}".format(e), status = 401)
 		
 		msg = "<pre>OK, now wait for activation of your account...\n\nUser id: {}</pre>".format(user.id)
 		return HttpResponse(msg)

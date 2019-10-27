@@ -7,6 +7,7 @@ import datetime
 import time
 import random
 from hashlib import sha512
+from player.Logger import Logger
 
 # Create your models here.
 
@@ -81,6 +82,7 @@ class AuthToken(models.Model):
 		try:
 			user = User.objects.get(login = login)
 			if user is None or user.active == False or userType != user.type:
+				Logger.instance().Log("Account \"{}\" is disabled, contact your administrator!".format(login))
 				print "Account inactive? {} ?= {}".format(userType, user.type)
 				print "{}, {}, {}".format(user is None, user.active == False, userType != user.type)
 				return None

@@ -123,12 +123,18 @@ class Player():
 			
 		Logger.instance().Log("Everyday im shufflin~")
 		
+	# force - true if error happened or song has finished
 	def nextSong(self, force = False):
+		
+		if force is False:
+			self.currentSong.skipCounter = self.currentSong.skipCounter + 1
+			self.currentSong.save()
+		
 		queueItemsCount = QueueItem.objects.count()
 		if queueItemsCount > 0:
-			id = random.randint(0, queueItemsCount - 1)
-			print "Random {} from {}".format(id, queueItemsCount)
-			item = QueueItem.objects.all()[id]
+			index = random.randint(0, queueItemsCount - 1)
+			print "Random {} from {}".format(index, queueItemsCount)
+			item = QueueItem.objects.all()[index]
 			song = item.song
 			item.delete()
 			print "Item: {} - {}".format(item.user, item.song)
@@ -147,6 +153,7 @@ class Player():
 		song = shuffleItem.song
 		shuffleItem.delete()
 		
+		print "Playing song: {}".format(song.title.encode('utf-8'))
 		self.playSong(song)
 		return
 		#song = Song.objects.get(id = 1)
@@ -159,6 +166,10 @@ class Player():
 			self.vlcPlayer.play()
 			print "Ok!"
 			
+			if song.title == "_":
+				song.title = self.getTitle(song.url)
+				song.save()
+			
 			self.currentSong = song
 			self.logCurrentQueue()
 		except Exception as e:
@@ -166,22 +177,46 @@ class Player():
 			self.nextSong(True)
 		
 	def queueSong(self, user, ids = None):
+		print "A"
 		if ids is not None:
+			print "B"
 			ids = filter(None, ids.split(" "))
 		
 			for id in ids:
+				print "C"
 				try:
 					if QueueItem.objects.filter(song_id = id).count() > 0:
+					#if QueueItem.objects.exists(song_id = id):
 						continue
 					
+					print "D"
 					item = QueueItem()
 					item.song = Song.objects.get(id = id)
 					item.user = user
 					item.save()
+					
+					item.song.queueCounter = item.song.queueCounter + 1
+					item.song.save()					
 				except:
 					pass
 		
 		self.logCurrentQueue()
+		
+	def addSong(self, user, url):
+		try:
+			title = self.getTitle(url)
+		except Exception as e:
+			Logger.instance().Log("Invalid url: {} - {}".format(url, e))
+			return
+		
+		song = Song()
+		song.active = True
+		song.url = url
+		song.title = title
+		song.user = user
+		song.save()
+		
+		self.queueSong(user, [song.id])
 		
 	def isPlaying(self):
 		return self.vlcPlayer.is_playing() == 1
@@ -204,6 +239,15 @@ class Player():
 			Logger.instance().Log("Booooh...")
 			return True
 		return False
+	
+	def getTitle(self, url):
+		try:
+			video = pafy.new(url)
+		except Exception as e:
+			Logger.instance().Log("Pafy [ {} ]: {}".format(url, e))
+			return
+
+		return video.title
 		
 	def getCurrentSong(self):
 		return self.currentSong

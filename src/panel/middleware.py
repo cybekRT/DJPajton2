@@ -17,7 +17,7 @@ class PanelAuth:
 		self.get_response = get_response
 		
 	def __call__(self, request):
-		if request.path.startswith("/login") or request.path.startswith("/register") or request.path.startswith("/admin") or request.path.startswith("/token") or request.path.startswith('/api/logger'):
+		if request.path.startswith("/login") or request.path.startswith("/register") or request.path.startswith("/admin/") or request.path.startswith("/token") or request.path.startswith('/api/logger'):
 			response = self.get_response(request)
 		elif self.validateToken(request):
 			response = self.get_response(request)

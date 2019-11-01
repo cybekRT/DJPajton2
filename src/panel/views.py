@@ -9,7 +9,7 @@ from player.Player import Player
 from base.models import AuthToken, User, USER_TYPE_SKYPE, USER_TYPE_WEB
 
 # Create your views here.
-def Index(request):
+def Panel(request):
 	player = Player.instance()
 	model = {}
 	model["song"] = player.getCurrentSong()
@@ -17,7 +17,7 @@ def Index(request):
 	model["length"] = player.getLength()
 	model["volume"] = player.getVolume()
 	
-	return HttpResponse(render(request, 'index.html', context = model))
+	return HttpResponse(render(request, 'panel.html', context = model))
 
 #def Login(request):
 #	if request.method == "POST"

@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 
-from django.shortcuts import render
+#from django.shortcuts import render
 from player.Player import Player
 from django.http.response import HttpResponse
-from base.models import Song, AuthToken
+from base.models import Song, User, QueueItem, AuthToken
 from django.core import serializers
 from player.Logger import Logger
 import json
@@ -76,6 +76,19 @@ def Queue(request, ids = None):
 	
 	print "Queue here: {}".format(ids)
 	return HttpResponse()
+
+def GetQueue(request):
+	queue = []
+	
+	for item in QueueItem.objects.all():
+		queue.append(item.song)
+	
+	blob = serializers.serialize("json", queue)
+	return HttpResponse(blob)
+
+def Users(request):
+	blob = serializers.serialize("json", User.objects.all())
+	return HttpResponse(blob)
 
 def Invalid(request):
 	print "Invalid request!!!!!"

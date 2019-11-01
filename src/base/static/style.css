@@ -1,0 +1,281 @@
+pre {
+	white-space: pre-wrap;
+	word-wrap: break-word;
+}
+
+input, option, pre {
+	font-size: 12pt;
+	/*font-family: serif;*/
+}
+
+#player-top {
+	background-color: #cccccc;
+	width: 100%;
+	box-sizing: border-box;
+	
+	padding: 5px;
+}
+
+#player-top-buttons>input {
+	width: 50%;
+	display: inline;
+}
+
+#button-start {
+	color: #00aa00;
+}
+
+#button-stop {
+	color: #aa0000;
+}
+
+#player {
+	background-color: #aaaaaa;
+}
+
+#player-top-buttons {
+	width: 10%;
+	display: inline-block;
+	box-sizing: border-box;
+}
+
+#player-top-title {
+	width: 80%;
+	display: inline-block;
+	box-sizing: border-box;
+	
+	text-align: center;
+}
+
+#player-panels {
+	width: 100%;
+	height: 400px;
+	
+	overflow: auto;
+	background-color: #aa0000;
+	box-sizing: border-box;
+}
+
+#player-panels-left {
+	vertical-align: top;
+	width: 100%;
+	background-color: #00aa00;
+	overflow: hidden;
+	/*display: inline-block;*/
+	
+	display: table;
+}
+
+#time-div, #volume-div {
+	display: table-row;
+}
+
+#player-panels-left>div>input {
+	width: 100%;
+}
+
+#player-panels-left>div>pre {
+	width: 30%;
+}
+
+#player-panels-left>div>input, #player-panels-left>div>pre {
+	display: table-cell;
+	vertical-align: middle;
+	text-align: center;
+	height: 100%;
+}
+
+#player-panels-left-parent {
+	vertical-align: top;
+	width: 33%;
+	height: 100%;
+	background-color: #00bb00;
+	overflow: hidden;
+	display: inline-block;
+	
+	text-align: center;
+}
+
+#player-panels-center {
+	vertical-align: top;
+	width: 24%;
+	height: 100%;
+	background-color: #00bb00;
+	overflow: hidden;
+	display: inline-block;
+	
+	text-align: center;
+}
+
+#player-panels-right {
+	vertical-align: top;
+	width: 43%;
+	background-color: #00cc00;
+	height: 100%;
+	overflow: scroll;
+	display: inline-block;
+}
+
+#queue-select {
+	width: 100%;
+	height: 90%;
+	display: inline-block;
+}
+
+#title {
+	background-color: #bbbbbb;
+	text-align: center;
+	/*width: 100%;*/
+	display: inline-block;
+}
+
+#time-div, #volume-div {
+	height: 100px;
+}
+
+#time, #volume {
+	height: 100%;
+	vertical-align: middle;
+}
+
+#time-pos, #time-length {
+	/*vertical-align: middle;*/
+}
+
+#time-pos-text, #time-length-text, #volume-text {
+	/*width: 50px;*/
+	display: inline-block;
+	
+	vertical-align: middle;
+}
+
+/*
+	Message log
+*/
+
+#log {
+	background-color: #aaaaaa;
+	color: #000000;
+	width: 100%;
+	/*height: 200px;*/
+	
+	box-sizing: border-box;
+	
+	/*padding-top: 5px;
+	padding-bottom: 5px;*/
+	border: 5px solid #aaaaaa;
+	
+	overflow: scroll;
+}
+
+.log-message {
+	background-color: #ffffff;
+	margin-top: 5px;
+	padding: 3px;
+	
+	/*padding-left: 8px;
+	padding-right: 8px;*/
+}
+
+.log-message>pre {
+	margin: 5px;
+}
+
+.log-message:first-child {
+	margin-top: 0px;
+}
+
+.log-message:last-child {
+	/*margin-bottom: 5px;*/
+}
+
+/* Playlist */
+
+#playlist-panel {
+	width: 100%;
+}
+
+#playlist-panel-left {
+	width: 50%;
+	display: inline-block;
+	
+	box-sizing: border-box;
+	padding: 5px;
+}
+
+#playlist-panel-left>* {
+	width: 100%;
+	display: inline-block;
+	vertical-align: top;
+	box-sizing: border-box;
+}
+
+#playlist-panel-left-filters {
+	display: inline-block;
+}
+
+#playlist-panel-left-filters>* {
+	display: inline-block;
+	box-sizing: border-box;
+}
+
+#filter-title {
+	width: 70%;
+}
+
+#show-removed-songs-text {
+	width: 20%;
+	text-align: right;
+}
+
+#show-removed-songs {
+	width: 5%;
+	text-align: center;
+}
+
+#playlist-panel-right {
+	width: 50%;
+	display: inline-block;
+	vertical-align: top;
+	
+	box-sizing: border-box;
+	padding: 5px;
+}
+
+#playlist-select {
+	height: 200px;
+}
+
+/* Queue */
+
+#queue {
+	width: 80%;
+	box-sizing: border-box;
+}
+
+#queue-button {
+	width: 20%;
+}
+
+/* Song info */
+#song-info {
+	width: 100%;
+	display: table;
+	vertical-align: top;
+}
+
+#song-info>div {
+	display: table-row;
+}
+
+#song-info>div>div, #song-info>div>input {
+	display: table-cell;
+}
+
+#song-info>div>div {
+	width: 30%;
+}
+
+#song-info>div>input {
+	width: 100%;
+}

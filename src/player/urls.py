@@ -14,10 +14,12 @@ urlpatterns = [
 	url(r'next', views.Next),
 	
 	url(r'queue/([0-9 ]+)', views.Queue),
-	url(r'queue', views.Queue),
+	url(r'queue', views.GetQueue),
 	
 	url(r'status', views.Status),
 	url(r'playlist', views.Playlist),
+	
+	url(r'users', views.Users),
 	
 	url(r'logger/wait/(\-{0,1}[0-9]+)', views.LoggerWait),
 	url(r'logger/(\-{0,1}[0-9]+)', views.LoggerSince),

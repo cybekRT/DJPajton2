@@ -8,5 +8,5 @@ urlpatterns = [
     url(r'logout', views.Logout.as_view()),
     url(r'register', views.Register.as_view()),
     url(r'token/(.+)', views.Token.as_view()),
-    url(r'', views.Index),
+    url(r'', views.Panel),
 ]

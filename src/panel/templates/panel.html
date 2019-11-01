@@ -1,0 +1,80 @@
+{% extends 'layout.html' %}
+{% block title %}DJ Pajton{% endblock %}
+
+{% load songtime %}
+{% load static %}
+
+{% block head %}
+<script src="{% static 'jquery-2.2.0.min.js' %}" ></script>
+<script src="{% static 'panel.js' %}" ></script>
+{% endblock %}
+
+{% block content %}
+<!-- <pre> -->
+	<!-- Test - {{ song.title }}<br />
+	Time - <p id="songtext">Testing... testing!</p> {{ time|songtime }} / {{ length|songtime }}<br />
+	Volume - {{ volume }}<br /> -->
+	<div id="player">
+		<div id="player-top">
+			<div id="player-top-buttons">
+				<input id="button-start" type="button" value="Start" onclick="$.get('/api/start')"><input id="button-stop" type="button" value="Stop" onclick="$.get('/api/stop')">
+			</div><div id="player-top-title">
+				<div id="title"></div>
+			</div>
+		</div>
+		
+		<div id="player-panels">
+		
+			<div id="player-panels-left-parent">
+			<div id="player-panels-left">
+				<div id="time-div">
+					<input id="time" type="range" min="0" max="{{ length }}" value="{{ time }}" onchange=" $.get('/api/time/'+$(this).val()) "> 
+					<pre><div id="time-pos-text">0:00</div> / <div id="time-length-text">0:00</div></pre> 
+				</div>
+				<div id="volume-div">
+					<input id="volume" type="range" min="0" max="100" value="{{ volume }}" onchange=" $.get('/api/volume/'+$(this).val()) ">
+					<pre><div id="volume-text">100%</div></pre>
+				</div>
+			</div></div><div id="player-panels-center">
+				<select id="queue-select" multiple disabled></select>
+				<input type="button" value="Next" onclick="$.get('/api/next')">
+			</div><div id="player-panels-right">
+				<div id="log"></div>
+			</div>
+		
+		</div>
+	</div>
+	
+	<div id="playlist-panel">
+		<div id="playlist-panel-left">
+			<div id="playlist-panel-left-filters">
+				<input id="filter-title" type="text" onkeyup="updateFilters()">
+				<pre id="show-removed-songs-text">Show removed</pre>
+				<input id="show-removed-songs" type="checkbox" onclick="updateFilters()">
+			</div>
+			<select id="playlist-select" multiple></select>
+		</div><div id="playlist-panel-right">
+			<div>
+				<input id="queue" type="text"><input id="queue-button" type="button" value="Queue!" onclick="submitQueueField()">
+			</div>
+			<div id="song-info">
+				<div><div>Song id</div><input id="songIndex" disabled="disabled" type="text" value=""></div>
+				<div><div>User: </div><input id="username" disabled="disabled" type="text" value=""></div>
+				<div><div>Skip: </div><input id="skipCounter" disabled="disabled" type="number" value=""></div>
+				<div><div>Queue: </div><input id="queueCounter" disabled="disabled" type="number" value=""></div>
+			</div>
+		</div>
+	</div>
+	<!-- Queue: 
+	
+	Playlist:
+	Filter - title: 
+	 -->
+	<!-- <select id="playlist-select"></select> -->
+	
+<!-- </pre> -->
+
+<script type="text/javascript">
+</script>
+	
+{% endblock %}

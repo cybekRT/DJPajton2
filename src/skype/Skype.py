@@ -2,11 +2,11 @@ import skpy
 import os
 import re
 import sys
+import json
 import threading
 import traceback
 import requests
 from subprocess import check_output
-#from player.Player import Player
 
 from base.models import USER_TYPE_SKYPE
 from time import sleep
@@ -54,8 +54,11 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		("^queue$", "Queue", "Displays current queue"),
 		("queue.*?([0-9 ]+)", "Queue", "Adds songs to queue"),
 		("^queue$", "Queue", "Prints current queue"),
-		("vol.*?([0-9]+)", "Volume", "Changes current volume"),
+		("(.+youtube\\.com\\/.+)", "AddSong", "Adds song to playlist"),
+		("vol.*?([\\-\\+]{0,1}[0-9]+)", "Volume", "Changes current volume"),
 		("^vol$", "Volume", "Gets current volume"),
+		
+		("^find(.+)$", "Search", "Searches for songs by title"),
 	)
 	
 	tokens = {
@@ -257,17 +260,60 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			self.Request(userId, "queue/{}".format(ids))
 		else:
 			self.Request(userId, "queue")
+			
+	def AddSong(self, userId, link):
+		print "Link: " + link
+		
+		hrefRegex = "href=\"(.+)\""
+		linkGroups = re.search(hrefRegex, link)
+		try:
+			url = linkGroups.group(1)
+		except:
+			raise Exception("Invalid URL")
+		print "URL: " + url
+		
+		idRegex = "v=([0-9a-zA-Z\\-\\_]+)"
+		idGroups = re.search(idRegex, url)
+		
+		try:
+			videoId = idGroups.group(1)
+		except:
+			raise Exception("Invalid video ID")
+		print "Video ID: " + videoId
+		
+		self.Request(userId, "add/{}".format(videoId))
 
 	def Volume(self, userId, volume = None):
-		
 		if volume is not None:
-			volume = self.Request(userId, "volume", volume)
+			reqVolume = volume
+			if volume[0] == '-':
+				reqVolume = int(self.Request(userId, "volume")) - volume[1:]
+			elif volume[0] == '+':
+				reqVolume = int(self.Request(userId, "volume")) + volume[1:]
+			
+			volume = self.Request(userId, "volume", reqVolume)
 		else:
 			volume = self.Request(userId, "volume")
 			self.sendMsg("Current volume: {}".format(volume))
 			
 		#self.sendMsg("Current volume: {}".format(volume))
-
+		
+	def Search(self, userId, title):
+		title = title.strip()
+		msg = "Searching for: " + title.encode('utf-8')
+		
+		found = False
+		
+		playlistJson = self.Request(userId, "playlist")
+		for item in json.loads(playlistJson):
+			if title in item.fields.title:
+				if found is False:
+					msg = msg + "\n"
+					found = True
+				
+				msg = msg + "\n[{}] - {}".format(item.pk, item.fields.title.encode('utf-8'))
+		
+		self.sendMsg(msg)
 
 
 

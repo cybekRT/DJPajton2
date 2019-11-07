@@ -35,7 +35,8 @@ class User(models.Model):
 		if self.salt is None or len(str(self.salt)) < 1:
 			raise "Salt not found..."
 		
-		return sha512(password + str(self.salt)).hexdigest()
+		passwordSalted = password + str(self.salt)
+		return sha512(passwordSalted.encode('ascii')).hexdigest()
 
 class Song(models.Model):
 	id = models.AutoField(primary_key = True)

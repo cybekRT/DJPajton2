@@ -22,7 +22,7 @@ try:
 	skype = Skype.instance()
 	skype.start()
 except:
-	print "Skype initialization failed! Use web panel :("
+	print("Skype initialization failed! Use web panel :(")
 
-print "Started!"
+print("Started!")
 application = get_wsgi_application()

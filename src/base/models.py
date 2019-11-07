@@ -29,7 +29,7 @@ class User(models.Model):
 	displayName = models.TextField(unique = True)
 	
 	def __str__(self):
-		return self.login.encode('utf-8')
+		return self.login
 	
 	def PasswordHash(self, password):
 		if self.salt is None or len(str(self.salt)) < 1:
@@ -43,26 +43,26 @@ class Song(models.Model):
 	url = models.TextField()
 	title = models.TextField()
 	date = models.DateTimeField(auto_now = True)
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	
 	queueCounter = models.IntegerField(default = 0)
 	skipCounter = models.IntegerField(default = 0)
 	
 	def __str__(self):
-		return self.title.encode('utf-8')
+		return self.title
 
 class ShuffleItem(models.Model):
 	id = models.AutoField(primary_key = True)
-	song = models.ForeignKey(Song)
+	song = models.ForeignKey(Song, on_delete=models.DO_NOTHING)
 
 class QueueItem(models.Model):
 	id = models.AutoField(primary_key = True)
-	song = models.ForeignKey(Song)
-	user = models.ForeignKey(User)
+	song = models.ForeignKey(Song, on_delete=models.DO_NOTHING)
+	user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	
 class AuthToken(models.Model):
 	token = models.TextField(primary_key = True)
-	user = models.ForeignKey(User)
+	user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
 	address = models.GenericIPAddressField()
 	lastUsed = models.DateTimeField(auto_now = True)
 	
@@ -72,41 +72,42 @@ class AuthToken(models.Model):
 		
 		if userType != USER_TYPE_WEB and userType != USER_TYPE_SKYPE:
 		#if userType not in USER_TYPES:
-			print "Invalid user type!"
+			print("Invalid user type!")
 			return None
 		
 		if userType == USER_TYPE_SKYPE and address != "127.0.0.1":
-			print "Wrong address? {} , {}".format(userType != USER_TYPE_SKYPE, address != "127.0.0.1")
+			print("Wrong address? {} , {}".format(userType != USER_TYPE_SKYPE, address != "127.0.0.1"))
 			return None
 		
 		try:
 			user = User.objects.get(login = login)
 			if user is None or user.active == False or userType != user.type:
 				Logger.instance().Log("Account \"{}\" is disabled, contact your administrator!".format(login))
-				print "Account inactive? {} ?= {}".format(userType, user.type)
-				print "{}, {}, {}".format(user is None, user.active == False, userType != user.type)
+				print("Account inactive? {} ?= {}".format(userType, user.type))
+				print("{}, {}, {}".format(user is None, user.active == False, userType != user.type))
 				return None
 		except:
-			print "No user - " + login
+			print("No user - " + login)
 			return None
 		
 		if user.type == USER_TYPE_WEB:
 			passwordHash = user.PasswordHash(password) #str(sha512(password + user.salt))
 			if passwordHash != user.password:
-				print "Wrong password hash"
+				print("Wrong password hash")
 				return None
 			
-		print "Removing old tokens!"
+		print("Removing old tokens!")
 		#AuthToken.delete(user = user)
 		oldTokens = AuthToken.objects.filter(user = user)
 		for ot in oldTokens:
-			print "Deleting token: {}".format(ot.token)
+			print("Deleting token: {}".format(ot.token))
 			ot.delete()
 			
-		print "Generating new token!"
+		print("Generating new token!")
 		token = AuthToken()
 		#print "Token = {} {} {}".format(str(sha512(str(time.time()))), login, str(random.random()))
-		token.token = sha512(str(time.time()) + login + str(random.random())).hexdigest()
+		tokenRandomValue = str(time.time()) + login + str(random.random())
+		token.token = sha512(tokenRandomValue.encode('ascii')).hexdigest()
 		token.user = user
 		token.address = address
 		token.save()

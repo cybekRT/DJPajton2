@@ -55,6 +55,14 @@ function timerz()
 
 function updateTime(time, length)
 {
+	if(length < 0)
+	{
+		$("#time-pos-text").text("...");
+		$("#time-length-text").text("...");
+		
+		return;
+	}
+	
 	posMinutes = Math.floor(time / 60);
 	if(time % 60 < 10)
 		posSeconds = "0" + time % 60;
@@ -82,7 +90,11 @@ function updateStatus()
 			$("#time").val(data.time);
 			
 			$("#volume").val(data.volume);
-			$("#volume-text").text(data.volume + "%")
+			
+			if(data.volume < 0)
+				$("#volume-text").text("...");
+			else
+				$("#volume-text").text(data.volume + "%")
 			
 			isPlaying = data.playing;
 			$("#button-start").attr("disabled", isPlaying);

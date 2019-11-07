@@ -16,6 +16,8 @@ urlpatterns = [
 	url(r'queue/([0-9 ]+)', views.Queue),
 	url(r'queue', views.GetQueue),
 	
+	url(r'add/(.+)', views.AddSong),
+	
 	url(r'status', views.Status),
 	url(r'playlist', views.Playlist),
 	

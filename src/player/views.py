@@ -64,17 +64,17 @@ def Playlist(request):
 	return HttpResponse(blob)
 
 def Queue(request, ids = None):
-	print "Request: {}".format(request)
-	print "Queue!"
+	print("Request: {}".format(request))
+	print("Queue!")
 	token_str = request.COOKIES['token']
-	print "Huh?"
+	print("Huh?")
 	token = AuthToken.Get(token_str)
 	
-	print "Got token, getting player!"
+	print("Got token, getting player!")
 	player = Player.instance()
 	player.queueSong(token.user, ids)
 	
-	print "Queue here: {}".format(ids)
+	print("Queue here: {}".format(ids))
 	return HttpResponse()
 
 def GetQueue(request):
@@ -86,15 +86,28 @@ def GetQueue(request):
 	blob = serializers.serialize("json", queue)
 	return HttpResponse(blob)
 
+def AddSong(request, videoId):
+	token_str = request.COOKIES['token']
+	token = AuthToken.Get(token_str)
+	
+	player = Player.instance()
+	url = "https://www.youtube.com/watch?v={}".format(videoId)
+	result = player.addSong(token.user, url)
+	
+	if result is True:
+		return HttpResponse()
+	else:
+		return HttpResponse(status = 400)
+
 def Users(request):
 	blob = serializers.serialize("json", User.objects.all())
 	return HttpResponse(blob)
 
 def Invalid(request):
-	print "Invalid request!!!!!"
-	print request.path[5:]
+	print("Invalid request!!!!!")
+	print(request.path[5:])
 	x = request.path[5:].split('/')
-	print x
+	print(x)
 	
 	functionName = x[0].lower().capitalize()
 	functionParams = x[1:]
@@ -104,7 +117,7 @@ def Invalid(request):
 	try:
 		return q(request, *functionParams)
 	except Exception as e:
-		print "Not implemented - {}".format(e)
+		print("Not implemented - {}".format(e))
 		return HttpResponse("Not implemented: {}".format(functionName), status = 501)
 	
 def LoggerRecent(request):

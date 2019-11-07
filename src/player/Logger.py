@@ -29,5 +29,5 @@ class Logger():
 		return self.messages[index+1:]
 	
 	def Log(self, msg):
-		print "Logged: {}".format(msg)
+		print("Logged: {}".format(msg))
 		self.messages.append(msg)

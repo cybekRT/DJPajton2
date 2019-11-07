@@ -1,6 +1,7 @@
 from django.shortcuts import redirect
 from django.http.response import HttpResponse
 from base.models import AuthToken
+from player.Logger import Logger
 
 class CSP:
 	def __init__(self, get_response):
@@ -20,6 +21,10 @@ class PanelAuth:
 		if request.path.startswith("/login") or request.path.startswith("/register") or request.path.startswith("/admin/") or request.path.startswith("/token") or request.path.startswith('/api/logger'):
 			response = self.get_response(request)
 		elif self.validateToken(request):
+			token_str = request.COOKIES['token']
+			token = AuthToken.Get(token_str)
+			if request.path != "/api/status" and request.path != "/api/queue":
+				Logger.instance().Log("{} -> {}".format(token.user.displayName, request.path))
 			response = self.get_response(request)
 		elif request.path.startswith("/api"):
 			response = HttpResponse("Access denied!", status = 401)
@@ -32,7 +37,7 @@ class PanelAuth:
 	
 	def validateToken(self, request):
 		if 'token' not in request.COOKIES:
-			print "No token in cookies :("
+			print("No token in cookies :(")
 			return False
 		
 		token_str = request.COOKIES['token']
@@ -41,7 +46,7 @@ class PanelAuth:
 		if token is None:
 			return False
 		
-		print "{} - {}".format(token.user.displayName.encode('utf-8'), request.path.encode('utf-8'))
+		print("{} - {}".format(token.user.displayName, request.path))
 		
 		return token.isValid()
 		#return AuthToken.Validate(token)

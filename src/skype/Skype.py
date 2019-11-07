@@ -10,7 +10,7 @@ from subprocess import check_output
 
 from base.models import USER_TYPE_SKYPE
 from time import sleep
-from models import SkypeConfig
+from .models import SkypeConfig
 
 _skype = None
 
@@ -21,6 +21,8 @@ class SkypeLoggerClient(threading.Thread):
 		
 	def run(self):
 		mainEndpoint = Skype.instance().mainEndpoint
+		
+		sleep(3)
 		
 		while True:
 			try:
@@ -44,6 +46,7 @@ class SkypeLoggerClient(threading.Thread):
 
 class Skype(skpy.SkypeEventLoop, threading.Thread):
 	
+	# ( regex, method, help_message, [case_sensitive] )
 	commands = (
 		("^help$", "Help", "Displays this message..."),
 		("^ping$", "Ping", "Pong?"),
@@ -54,8 +57,9 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		("^queue$", "Queue", "Displays current queue"),
 		("queue.*?([0-9 ]+)", "Queue", "Adds songs to queue"),
 		("^queue$", "Queue", "Prints current queue"),
-		("(.+youtube\\.com\\/.+)", "AddSong", "Adds song to playlist"),
+		("(.+youtube\\.com\\/.+)", "AddSong", "Adds song to playlist", True),
 		("vol.*?([\\-\\+]{0,1}[0-9]+)", "Volume", "Changes current volume"),
+#		(".*youtube.com.*v=([0-9a-zA-Z\-\_]+).*", "AddSong", "Adds song to playlist", True),
 		("^vol$", "Volume", "Gets current volume"),
 		
 		("^find(.+)$", "Search", "Searches for songs by title"),
@@ -87,7 +91,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		except:
 			raise Exception("Missing/Inactive skype configuration...")
 		
-		print "Logging in to skype..."
+		print("Logging in to skype...")
 		
 		if os.path.isfile('.skpy-token') is False:
 			open('.skpy-token', 'a').close()
@@ -119,8 +123,8 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		except Exception as e:
 			if len(msg) > 1024:
 				self.sendMsg(msg[:1024])
-			print "Skajpaj siadl...?"
-			print e
+			print("Skajpaj siadl...?")
+			print(e)
 			return
 
 	def run(self):
@@ -136,7 +140,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			self.sendMsg("DJ Pajton zaprasza na imprezke~!\n\nMoj adres IP: {}\nPanel administracyjny: http://{}/".format(ip, sys.argv[-1]))
 			self.firstRun = False
 
-		print "Started skype!"
+		print("Started skype!")
 		self.loop()
 		
 	def onEvent(self, event):
@@ -154,17 +158,22 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		userId = msg.userId
 		
 		for regex in self.commands:
-			print "Testing regex: \"{}\" ?= \"{}\"".format(cmd, regex[0])
-			m = re.search(regex[0], cmd)
+			print("Testing regex: \"{}\" ?= \"{}\"".format(cmd, regex[0]))
+			
+			if len(regex) >= 4 and regex[3] is True:
+				m = re.search(regex[0], msg.content.strip())
+			else:
+				m = re.search(regex[0], cmd)
+			
 			if m is not None:
 				try:
-					print "Found handler!!!"
+					print("Found handler!!!")
 					functionName = regex[1]
 					functionParams = m.groups()
 					handler = getattr(self, functionName)
 					return handler(userId, *functionParams)
 				except Exception as e:
-					print "Exception: {}".format(e)
+					print("Exception: {}".format(e))
 					self.sendMsg("Exception: {}".format(e))
 					return
 				
@@ -173,10 +182,10 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		
 		#print userId
 		if userId in self.tokens:
-			print "Existing token - {}...".format(userId)
+			print("Existing token - {}...".format(userId))
 			token = self.tokens[userId]
 		else:
-			print "Generating new token for: {}".format(userId)
+			print("Generating new token for: {}".format(userId))
 			req = requests.get(url = self.mainEndpoint + "/token/{}".format(userId))
 			if req.status_code != 200:
 				raise Exception("No token for user: {}".format(userId))
@@ -186,11 +195,11 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			self.tokens[userId] = token
 		
 		endpoint = self.mainEndpoint + "/api/" + "/".join(map(str, args))
-		print "Endpoint: {}".format(endpoint)
+		print("Endpoint: {}".format(endpoint))
 		
 		req = requests.get(url = endpoint, cookies = {'token': token})
-		print req.text
-		return req.text
+		print(req.text)
+		return req
 	
 	def getNameByUserId(self, userId):
 		try:
@@ -223,7 +232,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		
 		s = requests.Session()
 		s.get(url = endpoint)
-		print "Cookies: {}".format(s.cookies)
+		print("Cookies: {}".format(s.cookies))
 		
 		data = {
 			'type': USER_TYPE_SKYPE,
@@ -255,14 +264,14 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 
 	def Queue(self, userId, ids = None):
 		#print len(args)
-		print "Ohh"
+		print("Ohh")
 		if ids is not None:
 			self.Request(userId, "queue/{}".format(ids))
 		else:
 			self.Request(userId, "queue")
 			
 	def AddSong(self, userId, link):
-		print "Link: " + link
+		print("Link: " + link)
 		
 		hrefRegex = "href=\"(.+)\""
 		linkGroups = re.search(hrefRegex, link)
@@ -270,7 +279,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			url = linkGroups.group(1)
 		except:
 			raise Exception("Invalid URL")
-		print "URL: " + url
+		print("URL: " + url)
 		
 		idRegex = "v=([0-9a-zA-Z\\-\\_]+)"
 		idGroups = re.search(idRegex, url)
@@ -279,9 +288,10 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			videoId = idGroups.group(1)
 		except:
 			raise Exception("Invalid video ID")
-		print "Video ID: " + videoId
+		print("Video ID: " + videoId)
 		
-		self.Request(userId, "add/{}".format(videoId))
+		req = self.Request(userId, "add/{}".format(videoId))
+		# req.status_code
 
 	def Volume(self, userId, volume = None):
 		if volume is not None:
@@ -293,14 +303,14 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 			
 			volume = self.Request(userId, "volume", reqVolume)
 		else:
-			volume = self.Request(userId, "volume")
+			volume = self.Request(userId, "volume").text
 			self.sendMsg("Current volume: {}".format(volume))
 			
 		#self.sendMsg("Current volume: {}".format(volume))
 		
 	def Search(self, userId, title):
 		title = title.strip()
-		msg = "Searching for: " + title.encode('utf-8')
+		msg = "Searching for: " + title
 		
 		found = False
 		
@@ -311,7 +321,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 					msg = msg + "\n"
 					found = True
 				
-				msg = msg + "\n[{}] - {}".format(item.pk, item.fields.title.encode('utf-8'))
+				msg = msg + "\n[{}] - {}".format(item.pk, item.fields.title)
 		
 		self.sendMsg(msg)
 

@@ -48,7 +48,7 @@ class Register(View):
 			user.password = user.PasswordHash(password)
 		
 		if type == USER_TYPE_SKYPE and address != "127.0.0.1":
-			print "Hack attempt!!!"
+			print("Hack attempt!!!")
 			return redirect('/register?error=1&please_stop_hacking_this_site=667')
 		
 		user.displayName = displayName
@@ -71,14 +71,14 @@ class Login(View):
 		
 		type = int(data['type'])
 		if type != USER_TYPE_WEB:
-			print "Hack attempt!!!"
+			print("Hack attempt!!!")
 			return redirect('/login?error=1&please_stop_hacking_this_site=666')
 		
 		login = data['login']
 		password = data['password']
 		address = request.META['REMOTE_ADDR']
 		
-		print "Address: {}".format(address)
+		print("Address: {}".format(address))
 		
 		token = AuthToken.Generate(USER_TYPE_WEB, address, login, password)
 		if token is None:
@@ -91,7 +91,7 @@ class Login(View):
 		#response.cookies['token'] = token.token
 		response.set_cookie('token', token.token)
 		
-		print request.POST
+		print(request.POST)
 		return response
 	
 class Logout(View):
@@ -106,8 +106,8 @@ class Logout(View):
 	
 class Token(View):
 	def get(self, request, userId):
-		print str(request)
-		print str(request.META)
+		print(str(request))
+		print(str(request.META))
 		token = AuthToken.Generate(USER_TYPE_SKYPE, request.META['REMOTE_ADDR'], userId)
 		if token is None:
 			return HttpResponse("Invalid request", status = 400)

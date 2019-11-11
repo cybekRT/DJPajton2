@@ -58,10 +58,18 @@ def Status(request):
 	
 	return HttpResponse(json.dumps(data))
 
-def Playlist(request):
+def Playlist(request, showInactive = False):
 	#blob = json.dumps(list(Song.objects.all()))
-	blob = serializers.serialize("json", Song.objects.all())
+	
+	songs = Song.objects.all()
+	if showInactive is False:
+		songs = songs.filter(active = True)
+	
+	blob = serializers.serialize("json", songs)
 	return HttpResponse(blob)
+
+def PlaylistTotal(request):
+	return Playlist(request, True)
 
 def Queue(request, ids = None):
 	print("Request: {}".format(request))

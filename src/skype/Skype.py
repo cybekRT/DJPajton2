@@ -35,7 +35,9 @@ class SkypeLoggerClient(threading.Thread):
 				r = requests.get(getEndpoint)
 				data = r.json()
 				
+				print("Got some skype data!")
 				for item in data:
+					print("Sending data: {}".format(item))
 					Skype.instance().sendMsg(item)
 					
 				self.recent = current
@@ -56,7 +58,6 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		("^next$", "Next", "Next song, spam starts again..."),
 		("^queue$", "Queue", "Displays current queue"),
 		("queue.*?([0-9 ]+)", "Queue", "Adds songs to queue"),
-		("^queue$", "Queue", "Prints current queue"),
 		("(.+youtube\\.com\\/.+)", "AddSong", "Adds song to playlist", True),
 		("vol.*?([\\-\\+]{0,1}[0-9]+)", "Volume", "Changes current volume"),
 #		(".*youtube.com.*v=([0-9a-zA-Z\-\_]+).*", "AddSong", "Adds song to playlist", True),
@@ -87,7 +88,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		try:
 			config = SkypeConfig.objects.last()
 			if config.active == False:
-				raise
+				raise Exception("Skype is disabled!")
 		except:
 			raise Exception("Missing/Inactive skype configuration...")
 		
@@ -96,6 +97,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		if os.path.isfile('.skpy-token') is False:
 			open('.skpy-token', 'a').close()
 		
+		print("Logging in...")
 		super(Skype, self).__init__(config.login, config.password, ".skpy-token")
 		threading.Thread.__init__(self)
 
@@ -105,7 +107,9 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		#		self.lastDate = dateutil.parser.parse(dateStr)
 		#print "Last date: {0}".format(self.lastDate)
 
+		print("Getting group chat id...")
 		groupId = self.chats.urlToIds(config.groupAddress)['id']
+		print("Getting group chat...")
 		self.chat = self.chats.chat(groupId)
 		self.firstRun = True
 
@@ -119,6 +123,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		#	return
 
 		try:
+			print("Skype sending: {}".format(msg))
 			self.chat.sendMsg(msg)
 		except Exception as e:
 			if len(msg) > 1024:
@@ -266,7 +271,7 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		#print len(args)
 		print("Ohh")
 		if ids is not None:
-			self.Request(userId, "queue/{}".format(ids))
+			self.Request(userId, "queue/{}".format(ids.strip()))
 		else:
 			self.Request(userId, "queue")
 			
@@ -309,19 +314,19 @@ class Skype(skpy.SkypeEventLoop, threading.Thread):
 		#self.sendMsg("Current volume: {}".format(volume))
 		
 	def Search(self, userId, title):
-		title = title.strip()
+		title = title.strip().lower()
 		msg = "Searching for: " + title
 		
 		found = False
 		
-		playlistJson = self.Request(userId, "playlist")
+		playlistJson = self.Request(userId, "playlist").text
 		for item in json.loads(playlistJson):
-			if title in item.fields.title:
+			if title in item['fields']['title'].lower():
 				if found is False:
 					msg = msg + "\n"
 					found = True
 				
-				msg = msg + "\n[{}] - {}".format(item.pk, item.fields.title)
+				msg = msg + "\n[{}] - {}".format(item['pk'], item['fields']['title'])
 		
 		self.sendMsg(msg)
 

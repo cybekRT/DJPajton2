@@ -7,6 +7,7 @@ from player.Logger import Logger
 import json
 import time
 import random
+import math
 from django.core.exceptions import ObjectDoesNotExist
 
 _player = None
@@ -169,9 +170,10 @@ class Player():
 			if song.title == "_":
 				song.title = self.getTitle(song.url)
 				song.save()
-			
+				
 			self.currentSong = song
 			self.logCurrentQueue()
+			
 		except Exception as e:
 			Logger.instance().Log("Player error ({} - {}): {}".format(song.id, song.title, e))
 			self.nextSong(True)
@@ -191,8 +193,13 @@ class Player():
 						continue
 					
 					print("D")
+					
+					song = Song.objects.get(id = id)
+					if song.active is False:
+						continue
+					
 					item = QueueItem()
-					item.song = Song.objects.get(id = id)
+					item.song = song
 					item.user = user
 					item.save()
 					
@@ -268,7 +275,7 @@ class Player():
 		return self.currentSong
 	
 	def getTime(self):
-		return self.vlcPlayer.get_time() / 1000
+		return math.floor(self.vlcPlayer.get_time() / 1000)
 	
 	def setTime(self, time):
 		time = int(time)
@@ -278,7 +285,7 @@ class Player():
 		return self.getTime()
 	
 	def getLength(self):
-		return self.vlcPlayer.get_length() / 1000
+		return math.floor(self.vlcPlayer.get_length() / 1000)
 		
 	def getVolume(self):
 		volume = self.vlcPlayer.audio_get_volume()

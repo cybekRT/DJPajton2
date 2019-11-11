@@ -21,8 +21,9 @@ vlc = Player.instance()
 try:
 	skype = Skype.instance()
 	skype.start()
-except:
+except Exception as e:
 	print("Skype initialization failed! Use web panel :(")
+	print("  {}".format(e))
 
 print("Started!")
 application = get_wsgi_application()

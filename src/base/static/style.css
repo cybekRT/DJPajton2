@@ -82,7 +82,12 @@ input, option, pre {
 	display: table-cell;
 	vertical-align: middle;
 	text-align: center;
+	/*height: 100%;*/
 	height: 100%;
+	/*margin-top: 30%;
+	margin-bottom: 30%;*/
+	/*margin-top: 15%;
+	margin-bottom: 15%;*/
 }
 
 #player-panels-left-parent {

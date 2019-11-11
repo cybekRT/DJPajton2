@@ -207,7 +207,7 @@ $(document).ready(function () {
 	);
 	
 	$.getJSON(
-		"/api/playlist", function(data, status, xhr) {
+		"/api/playlist/all", function(data, status, xhr) {
 			playlist = data;
 			var i;
 			for(i = 0; i < data.length; i++)

@@ -23,7 +23,16 @@ class PanelAuth:
 		elif self.validateToken(request):
 			token_str = request.COOKIES['token']
 			token = AuthToken.Get(token_str)
-			if request.path != "/api/status" and request.path != "/api/queue":
+			pathsToIgnore = [
+				"/",
+				"/api/status",
+				"/api/queue",
+				"/api/playlist",
+				"/api/playlist/all",
+				"/api/users",
+			]
+			#if request.path != "/api/status" and request.path != "/api/queue":
+			if request.path not in pathsToIgnore:
 				Logger.instance().Log("{} -> {}".format(token.user.displayName, request.path))
 			response = self.get_response(request)
 		elif request.path.startswith("/api"):
